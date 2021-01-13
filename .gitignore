@@ -3,4 +3,4 @@
 
 #except these files
 !.gitignore
-!main/synth.c
+!/main/synth.c
