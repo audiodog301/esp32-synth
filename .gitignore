@@ -3,4 +3,5 @@
 
 #except these files
 !.gitignore
+!README.md
 !main/synth.c
