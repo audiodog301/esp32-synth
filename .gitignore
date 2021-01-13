@@ -2,6 +2,6 @@
 *
 
 #except these files
+!main/*
 !.gitignore
 !README.md
-!main/synth.c
