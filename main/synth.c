@@ -1,31 +1,54 @@
 #include <stdio.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
+#include <stdlib.h>
 #include "driver/dac.h"
 #include "driver/timer.h"
-#include "sdkconfig.h"
 
-int frequency = 880;
-int count = 0;
-double val = 0;
+//define a Saw type to hold some data
+typedef struct Saw_ {
+  int frequency;
+  int count;
+  double val;
+} Saw;
 
-int out = 0;
+//constructor function for a new Saw
+Saw* new_Saw(int frequency) {
+  Saw* result = malloc(sizeof(Saw)); //allocate a certain number of bytes to hold the new Saw and
+  //store the pointer to that memory in result (result is a pointer to a Saw)
 
-int next_sample(int sample_rate) { // temporary function to generate a sawtooth wave
-    if (count > sample_rate/frequency) {
-          count = 0;
-    } else {
-      count += 1;
-    }
-    
-    if (count == 0) {
-      val = 1;
-    } else {
-      val -= 1.0/(sample_rate/frequency);
-    }
+  //populate the new Saw 
+  result->frequency = frequency;
+  result->count = 0;
+  result->val = 0.0;
 
-    return (int) (val*255);
+  //and finally return it!
+  return result;
 }
+
+//set the frequency of a Saw
+void saw_Set_Frequency(Saw* self, int frequency) {
+  self->frequency = frequency;
+}
+
+//produce the next sample of the sawtooth wave
+unsigned char saw_Next_Sample(Saw* self, int sample_rate) {
+
+  //keep track of how many samples have passed. reset once phase is 0 again.
+  if (self->count >= (int) (sample_rate / self->frequency)) {
+    self->count = 0;
+  } else {
+    self->count += 1;
+  }
+
+  if (self->count == 0) { //if phase is 0
+    self->val = 1.0; //then set the value to be 1 (the spike at the beginning of the wave)
+  } else {
+    self->val -= 1.0 / (sample_rate / self->frequency); //otherwise ramp down
+  }
+
+  return (unsigned char) (self->val * 255); //return the value, but mapped to 0-255 instead of 0-1
+}
+
+Saw* saw;
 
 static intr_handle_t interrupt_handle;
 
@@ -35,7 +58,7 @@ void interrupt_for_sample(void* arg) { // function that gets called upon timer i
   TIMERG0.int_clr_timers.t0 = 1;
   TIMERG0.hw_timer[0].config.alarm_en = 1;
 
-  dac_output_voltage(DAC_CHANNEL_2, next_sample(40000));
+  dac_output_voltage(DAC_CHANNEL_2, saw_Next_Sample(saw, 40000));
 }
 
 timer_config_t config = { // define the timer configuation we want to use.
@@ -50,6 +73,7 @@ timer_config_t config = { // define the timer configuation we want to use.
 void app_main(void)
 {    
   dac_output_enable(DAC_CHANNEL_2); // enable output on the first DAC
+  saw = new_Saw(100); //make a new sawtooth oscillator
     
   timer_init(TIMER_GROUP_0, TIMER_0, &config); // initialize the first timer of the first timer group with the configuration defined above
   timer_set_counter_value(TIMER_GROUP_0, TIMER_0, 0);
