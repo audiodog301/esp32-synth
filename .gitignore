@@ -1,0 +1,6 @@
+# ignore everythhing
+*
+
+#except these files
+!.gitignore
+!synth.c
