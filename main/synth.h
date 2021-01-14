@@ -45,23 +45,64 @@ unsigned char saw_Next_Sample(Saw* self, int sample_rate) {
   return (unsigned char) (self->val * 255); //return the value, but mapped to 0-255 instead of 0-1
 }
 
+//define a Sequencer type to hold some data
 typedef struct Sequencer_ {
     int step_count;
     int where;
     int count;
+    int bpm;
     int steps[];
 } Sequencer;
 
-Sequencer* new_Sequencer(int step_count) {
+//constructor function for a new Sequencer
+Sequencer* new_Sequencer(int step_count, int bpm) {
     Sequencer* sequencer = malloc(3*sizeof(int) + step_count*sizeof(int)); //three integers plus the array of integers
 
     sequencer->step_count = step_count;
     sequencer->where = 0;
     sequencer->count = 0;
+    sequencer->bpm = bpm;
     
     for (int i = 0; i < step_count; i++) {
         sequencer->steps[i] = 500;
     }
 
     return sequencer;
+}
+
+//get the midi note value of an arbitrary step
+int sequencer_Get_Note(Sequencer* sequencer, int index) {
+    if (index > (sequencer->step_count - 1) || index < 0) {
+        return -1; //return -1 if you ask for an out of bounds index
+    } else {
+        return sequencer->steps[index]; //otherwise return what is expected
+    }
+}
+
+//set the midi note value of an arbitrary step
+int sequencer_Set_Note(Sequencer* sequencer, int index, int val) {
+    if (index > (sequencer->step_count - 1) || index < 0) {
+        return -1; //return -1 if you ask for an out of bounds index
+    } else {
+       sequencer->steps[index] = val;
+       return 0; //otherwise set the value and return 0 for success
+    }
+}
+
+//get a new note
+//TODO: fox off-by-one error
+int sequencer_Next_Note(Sequencer* sequencer, int sample_rate) {
+    sequencer->count += 1;
+    
+    if (sequencer->where > (sequencer->step_count - 1)) {
+            sequencer->where = 0;
+        }
+    
+    if (sequencer->count > sequencer->bpm/60/sample_rate) {
+        sequencer->where += 1;
+        sequencer->count = 0;
+        return sequencer_Get_Note(sequencer, sequencer->where); //get the next note
+    } else {
+        return -1; //return -1 if no new note yet
+    }
 }
