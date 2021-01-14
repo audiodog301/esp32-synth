@@ -28,18 +28,18 @@ void saw_Set_Frequency(Saw* self, int frequency) {
 
 //produce the next sample of the sawtooth wave
 unsigned char saw_Next_Sample(Saw* self, int sample_rate) {
-
+  
+  if (self->count == 0) { //if phase is 0
+    self->val = 1.0; //then set the value to be 1 (the spike at the beginning of the wave)
+  } else {
+    self->val -= 1.0 / (sample_rate / self->frequency); //otherwise ramp down
+  }
+  
   //keep track of how many samples have passed. reset once phase is 0 again.
   if (self->count >= (int) (sample_rate / self->frequency)) {
     self->count = 0;
   } else {
     self->count += 1;
-  }
-
-  if (self->count == 0) { //if phase is 0
-    self->val = 1.0; //then set the value to be 1 (the spike at the beginning of the wave)
-  } else {
-    self->val -= 1.0 / (sample_rate / self->frequency); //otherwise ramp down
   }
 
   return (unsigned char) (self->val * 255); //return the value, but mapped to 0-255 instead of 0-1

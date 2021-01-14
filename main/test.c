@@ -1,40 +1,39 @@
 #include <stdio.h>
-#include <time.h>
+#include <assert.h>
 #include "synth.h"
 
-//really stupid delay function
-void delay(int number_of_seconds) { 
-    // Converting time into milli_seconds 
-    int milliseconds = 1000 * number_of_seconds; 
-  
-    // Storing start time 
-    clock_t start_time = clock(); 
-  
-    // looping till required time is not achieved 
-    while (clock() < start_time + milliseconds) 
-        ; 
-} 
-
 int main(int argc, char* argv[]) {
-    int c = 16;
+    //test that the constructor function makes the Saw properly
+    printf("Testing saw contructor. . .\n");
     
-    Sequencer* sequencer = new_Sequencer(c, 120);
+    Saw* saw = new_Saw(440);
 
-    for (int i = 0; i < sequencer->step_count; i += 1){
-        sequencer_Set_Note(sequencer, i, i);
-    }
+    assert(saw->frequency == 440);
+    assert(saw->count == 0);
+    assert(saw->val == 0.0);
 
-    while (1) { 
-        int note = sequencer_Next_Note(sequencer, 100);
+    printf("Saw constructor works!\n");
 
-        if (note != -1) {
-            printf("%i\n", note);
-        }
-        
-        delay(100);
-    }
+    //test that saw_Set_Frequency() changes frequency properly, and ONLY changes frequency
+    printf("Testing saw_Set_Frequency(). . .\n");
+    saw_Set_Frequency(saw, 660);
 
-    free(sequencer);
+    assert(saw->frequency == 660);
+    assert(saw->count == 0);
+    assert(saw->val == 0.0);
+
+    printf("saw_Set_Frequency() works!\n");
+
+    //test that when you ask for a new sample with a count of 0, your output is 255, your count increments by 1, and your value is 1.0
+    printf("Testing saw_Next_Sample(). . .\n");
     
+    unsigned char sample = saw_Next_Sample(saw, 40000);
+
+    assert(sample == 255);
+    assert(saw->count == 1);
+    assert(saw->val = 1.0);
+
+    printf("saw_Next_Sample() works!\n");
+
     return 0;
 }
