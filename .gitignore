@@ -5,5 +5,5 @@
 !.gitignore
 !README.md
 
-!main/
-!main/synth.c
+#!main/
+!main/*
