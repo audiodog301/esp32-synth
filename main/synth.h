@@ -64,7 +64,7 @@ Sequencer* new_Sequencer(int step_count, int bpm) {
     sequencer->bpm = bpm;
     
     for (int i = 0; i < step_count; i++) {
-        sequencer->steps[i] = 500;
+        sequencer->steps[i] = 500;  //500 - no note
     }
 
     return sequencer;
@@ -90,7 +90,7 @@ int sequencer_Set_Note(Sequencer* sequencer, int index, int val) {
 }
 
 //get a new note
-//TODO: fox off-by-one error
+//TODO: fix off-by-one error
 int sequencer_Next_Note(Sequencer* sequencer, int sample_rate) {
     sequencer->count += 1;
     
@@ -99,9 +99,10 @@ int sequencer_Next_Note(Sequencer* sequencer, int sample_rate) {
         }
     
     if (sequencer->count > sequencer->bpm/60/sample_rate) {
+        int note = sequencer_Get_Note(sequencer, sequencer->where); //get the next note
         sequencer->where += 1;
         sequencer->count = 0;
-        return sequencer_Get_Note(sequencer, sequencer->where); //get the next note
+        return note;
     } else {
         return -1; //return -1 if no new note yet
     }
