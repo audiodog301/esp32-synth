@@ -44,3 +44,24 @@ unsigned char saw_Next_Sample(Saw* self, int sample_rate) {
 
   return (unsigned char) (self->val * 255); //return the value, but mapped to 0-255 instead of 0-1
 }
+
+typedef struct Sequencer_ {
+    int step_count;
+    int where;
+    int count;
+    int steps[];
+} Sequencer;
+
+Sequencer* new_Sequencer(int step_count) {
+    Sequencer* sequencer = malloc(3*sizeof(int) + step_count*sizeof(int)); //three integers plus the array of integers
+
+    sequencer->step_count = step_count;
+    sequencer->where = 0;
+    sequencer->count = 0;
+    
+    for (int i = 0; i < step_count; i++) {
+        sequencer->steps[i] = 500;
+    }
+
+    return sequencer;
+}
