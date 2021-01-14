@@ -5,6 +5,6 @@
 !.gitignore
 !README.md
 
-#!main/
+!main/
 !main/synth.c
 !main/synth.h
