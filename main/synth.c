@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "driver/dac.h"
 #include "driver/timer.h"
+#include "synth.h"
 
 Saw* saw;
 
