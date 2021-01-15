@@ -5,7 +5,7 @@
 Well, this project is still very much under development. I haven't released any schematics for any hardware or anything. But if you want to hack around with what I have so far, here's the general idea:
 
 ## The "development environment" (how to set up the jank)
-1. Get an esp32, a breadboard, some resistors, capacitors and an npn transistor, a computer, and a USB cable.
+1. Get an esp32, a breadboard, some resistors, capacitors, and an npn transistor, a computer, and a USB cable.
 2. Get setup with the [esp-idf](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/) environment. If you're a cool leet dude then you can just download it and use their python scripts to do things. If you prefer something actually remotely practical like me, they have a vscode extension! Lower down I'll give some tips for getting that set up. They have an eclipse extension but please don't use eclipse.
 3. Make a new project with esp-idf. This is really really bad but the way you have to do it is copy an example project over. Then, save [synth.h](https://github.com/audiodog301/esp32-synth/blob/master/main/synth.h) in your main folder and copy the code from [synth.c](https://github.com/audiodog301/esp32-synth/blob/master/main/synth.c) into your main.c file.
 	4. Optionally, you can futz with some files (CMakeCache.txt is the not-obvious one you have to mess with) to make your project a little bit more aesthetically pleasing (change the project name, name of the file with your code, etc.) There are also probably some files that come with the example you can delete. Trial and error with educated guesses is your best bet for finding these.
