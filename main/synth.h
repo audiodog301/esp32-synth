@@ -1,4 +1,10 @@
 #include <stdlib.h>
+#include <math.h>
+
+//return a value in hertz when given a note
+int midi_To_Frequency(int midi) {
+  return (pow(2, ((midi - 69) / 12)) * 440);
+}
 
 //define a Saw type to hold some data
 typedef struct Saw_ {
@@ -89,10 +95,10 @@ int sequencer_Set_Note(Sequencer* sequencer, int index, int val) {
     }
 }
 
-//get a new note
-//TODO: fix off-by-one error
+//get a new notes
 int sequencer_Next_Note(Sequencer* sequencer, int sample_rate) {
-    sequencer->count += 1;
+    sequencer->count = sequencer->count + 1;
+    printf("incremented sequencer count\n");
     
     if (sequencer->where > (sequencer->step_count - 1)) {
             sequencer->where = 0;
