@@ -2,6 +2,8 @@
 #include "driver/dac.h"
 #include "driver/timer.h"
 #include "synth.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 Saw* saw;
 Sequencer* sequencer;
@@ -16,9 +18,9 @@ void interrupt_for_sample(void* arg) { // function that gets called upon timer i
 
   int note = sequencer_Next_Note(sequencer, 40000);
   
-  if (note != -1) {
-    saw_Set_Frequency(saw, midi_To_Frequency(note));
-  }
+  //if (note != -1) {
+  //  saw_Set_Frequency(saw, midi_To_Frequency(note));
+  //}
 
   dac_output_voltage(DAC_CHANNEL_2, saw_Next_Sample(saw, 40000));
 }
@@ -36,12 +38,12 @@ void app_main(void)
 {    
   dac_output_enable(DAC_CHANNEL_2); // enable output on the second DAC
   
-  saw = new_Saw(100); //make a new sawtooth oscillator
-  sequencer = new_Sequencer(2, 60); //make a new sequencer
+  saw = new_Saw(200); //make a new sawtooth oscillator
+  sequencer = new_Sequencer(2, 60); //TODO fix multi_heap corrupt heap nonsense
 
   sequencer_Set_Note(sequencer, 0, 60);
   sequencer_Set_Note(sequencer, 1, 72); //make the sequencer play octaves
-    
+  
   timer_init(TIMER_GROUP_0, TIMER_0, &config); // initialize the first timer of the first timer group with the configuration defined above
   timer_set_counter_value(TIMER_GROUP_0, TIMER_0, 0);
   timer_set_alarm_value(TIMER_GROUP_0, TIMER_0, 999); // trigger alarm when it counts to 1000 (should technically be 999 since we're starting from 0). But this is the last step in making a 40kHz clock.

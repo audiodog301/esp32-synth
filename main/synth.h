@@ -62,7 +62,7 @@ typedef struct Sequencer_ {
 
 //constructor function for a new Sequencer
 Sequencer* new_Sequencer(int step_count, int bpm) {
-    Sequencer* sequencer = malloc(3*sizeof(int) + step_count*sizeof(int)); //three integers plus the array of integers
+    Sequencer* sequencer = malloc(4*sizeof(int) + step_count*sizeof(int)); //three integers plus the array of integers
 
     sequencer->step_count = step_count;
     sequencer->where = 0;
