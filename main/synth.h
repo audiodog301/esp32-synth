@@ -98,18 +98,20 @@ int sequencer_Set_Note(Sequencer* sequencer, int index, int val) {
 //get a new notes
 int sequencer_Next_Note(Sequencer* sequencer, int sample_rate) {
     sequencer->count = sequencer->count + 1;
-    printf("incremented sequencer count\n");
+
+    int note = 0;
     
     if (sequencer->where > (sequencer->step_count - 1)) {
-            sequencer->where = 0;
-        }
-    
-    if (sequencer->count > sequencer->bpm/60/sample_rate) {
-        int note = sequencer_Get_Note(sequencer, sequencer->where); //get the next note
-        sequencer->where += 1;
-        sequencer->count = 0;
-        return note;
-    } else {
-        return -1; //return -1 if no new note yet
+        sequencer->where = 0;
     }
+    
+    if (sequencer->count > ((double)sequencer->bpm)/(((double)60)/((double)sample_rate))) {
+        sequencer->where += 1;
+        note = sequencer_Get_Note(sequencer, sequencer->where); //get the next note
+        sequencer->count = 0;
+    } else {
+        note = -1; //return -1 if no new note yet
+    }
+
+    return note;
 }

@@ -18,9 +18,9 @@ void interrupt_for_sample(void* arg) { // function that gets called upon timer i
 
   int note = sequencer_Next_Note(sequencer, 40000);
   
-  //if (note != -1) {
-  //  saw_Set_Frequency(saw, midi_To_Frequency(note));
-  //}
+  if (note != -1) {
+    saw_Set_Frequency(saw, midi_To_Frequency(note));
+  }
 
   dac_output_voltage(DAC_CHANNEL_2, saw_Next_Sample(saw, 40000));
 }
@@ -37,6 +37,7 @@ timer_config_t config = { // define the timer configuation we want to use.
 void app_main(void)
 {    
   dac_output_enable(DAC_CHANNEL_2); // enable output on the second DAC
+  dac_output_enable(DAC_CHANNEL_1);
   
   saw = new_Saw(200); //make a new sawtooth oscillator
   sequencer = new_Sequencer(2, 60); //TODO fix multi_heap corrupt heap nonsense
