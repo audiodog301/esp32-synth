@@ -51,67 +51,83 @@ unsigned char saw_Next_Sample(Saw* self, int sample_rate) {
   return (unsigned char) (self->val * 255); //return the value, but mapped to 0-255 instead of 0-1
 }
 
-//define a Sequencer type to hold some data
+typedef enum Midi_Note_or_Frequency_ { MIDI_NOTE, FREQUENCY } Midi_Note_or_Frequency;
+
+typedef struct Note_ {
+  Midi_Note_or_Frequency midi_note_or_frequency;
+  int val;
+} Note;
+
+Note* new_Note(Midi_Note_or_Frequency midi_note_or_frequency, int val) {
+  Note* new = malloc(sizeof(Note));
+
+  new->midi_note_or_frequency = midi_note_or_frequency;
+  new->val = val;
+
+  return new;
+}
+
+struct Step {
+  Note *note;
+  struct Step *next;
+};
+
+struct Step* new_Step(Note *note, struct Step *next) {
+  struct Step* new = malloc(sizeof(struct Step));
+  
+  new->note = note;
+  new->next = next;
+
+  return new;
+
+}
+
 typedef struct Sequencer_ {
-    int step_count;
-    int where;
-    int count;
-    int bpm;
-    int steps[];
+  int length;
+  int count;
+  struct Step* current;
+  int period;
+  struct Step *steps[];
 } Sequencer;
 
-//constructor function for a new Sequencer
-Sequencer* new_Sequencer(int step_count, int bpm) {
-    Sequencer* sequencer = malloc(4*sizeof(int) + step_count*sizeof(int)); //three integers plus the array of integers
+Sequencer* new_Sequencer(int length, int period) {
+  Sequencer* new = malloc(sizeof(Sequencer) + (sizeof(struct Step)*length));
 
-    sequencer->step_count = step_count;
-    sequencer->where = 0;
-    sequencer->count = 0;
-    sequencer->bpm = bpm;
-    
-    for (int i = 0; i < step_count; i++) {
-        sequencer->steps[i] = 500;  //500 - no note
-    }
+  for (int i = 0; i < length; i++) {
+    new->steps[i] = new_Step(new_Note(FREQUENCY, -1), NULL);
+  }
 
-    return sequencer;
+  for (int i = 0; i < length; i++) {
+    new->steps[i]->next = new->steps[(i + 1)%length];
+  }
+
+  new->length = length;
+  new->count = 0;
+  new->current = new->steps[1];
+  new->period = period;
+
+  return new;
 }
 
-//get the midi note value of an arbitrary step
-int sequencer_Get_Note(Sequencer* sequencer, int index) {
-    if (index > (sequencer->step_count - 1) || index < 0) {
-        return -1; //return -1 if you ask for an out of bounds index
-    } else {
-        return sequencer->steps[index]; //otherwise return what is expected
-    }
-}
-
-//set the midi note value of an arbitrary step
-int sequencer_Set_Note(Sequencer* sequencer, int index, int val) {
-    if (index > (sequencer->step_count - 1) || index < 0) {
-        return -1; //return -1 if you ask for an out of bounds index
-    } else {
-       sequencer->steps[index] = val;
-       return 0; //otherwise set the value and return 0 for success
-    }
-}
-
-//get a new notes
-int sequencer_Next_Note(Sequencer* sequencer, int sample_rate) {
-    sequencer->count = sequencer->count + 1;
-
-    int note = 0;
+int sequencer_Next_Note(Sequencer* self) {
+  int freq = -1;
+  
+  if (self->count > self->period) {
     
-    if (sequencer->where > (sequencer->step_count - 1)) {
-        sequencer->where = 0;
+    if (self->current->note->midi_note_or_frequency == MIDI_NOTE) {
+      freq = midi_To_Frequency(self->current->note->val);
+      //freq = 5; //make this trivial, even tho it shouldnt be called in the first place even.
+    } else {
+      freq = self->current->note->val;
     }
     
-    if (sequencer->count > ((double)sequencer->bpm)/(((double)60)/((double)sample_rate))) {
-        sequencer->where += 1;
-        note = sequencer_Get_Note(sequencer, sequencer->where); //get the next note
-        sequencer->count = 0;
-    } else {
-        note = -1; //return -1 if no new note yet
-    }
+    self->current = self->current->next;
+    self->count = 0;
+  } else {
+    freq = -1;
+  }
+  
+  self->count += 1;
 
-    return note;
+  return freq;
 }

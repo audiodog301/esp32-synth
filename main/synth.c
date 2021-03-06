@@ -16,10 +16,10 @@ void interrupt_for_sample(void* arg) { // function that gets called upon timer i
   TIMERG0.int_clr_timers.t0 = 1;
   TIMERG0.hw_timer[0].config.alarm_en = 1;
 
-  int note = sequencer_Next_Note(sequencer, 40000);
-  
+  int note = sequencer_Next_Note(sequencer);
+
   if (note != -1) {
-    saw_Set_Frequency(saw, midi_To_Frequency(note));
+    saw_Set_Frequency(saw, note);
   }
 
   dac_output_voltage(DAC_CHANNEL_2, saw_Next_Sample(saw, 40000));
@@ -39,11 +39,13 @@ void app_main(void)
   dac_output_enable(DAC_CHANNEL_2); // enable output on the second DAC
   dac_output_enable(DAC_CHANNEL_1);
   
-  saw = new_Saw(200); //make a new sawtooth oscillator
-  sequencer = new_Sequencer(2, 60); //TODO fix multi_heap corrupt heap nonsense
+  sequencer = new_Sequencer(3, 10000);
 
-  sequencer_Set_Note(sequencer, 0, 60);
-  sequencer_Set_Note(sequencer, 1, 72); //make the sequencer play octaves
+  sequencer->steps[0]->note->val = 200;
+  sequencer->steps[1]->note->val = 250;
+  sequencer->steps[2]->note->val = 300;
+
+  saw = new_Saw(sequencer->steps[0]->note->val); //make a new sawtooth oscillator
   
   timer_init(TIMER_GROUP_0, TIMER_0, &config); // initialize the first timer of the first timer group with the configuration defined above
   timer_set_counter_value(TIMER_GROUP_0, TIMER_0, 0);
