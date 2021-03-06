@@ -5,6 +5,10 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+typedef enum Mode_ {EDIT, PLAY} Mode;
+
+Mode mode = PLAY;
+
 Saw* saw;
 Sequencer* sequencer;
 
@@ -16,13 +20,21 @@ void interrupt_for_sample(void* arg) { // function that gets called upon timer i
   TIMERG0.int_clr_timers.t0 = 1;
   TIMERG0.hw_timer[0].config.alarm_en = 1;
 
-  int note = sequencer_Next_Note(sequencer);
+  if (mode == PLAY) {
+    int note = sequencer_Next_Note(sequencer);
 
-  if (note != -1) {
-    saw_Set_Frequency(saw, note);
+    if (note != -1) {
+      saw_Set_Frequency(saw, note);
+    }
   }
 
   dac_output_voltage(DAC_CHANNEL_2, saw_Next_Sample(saw, 40000));
+}
+
+void poll(void *pvParameters) {
+  while(1) {
+    printf("TEST");
+  }
 }
 
 timer_config_t config = { // define the timer configuation we want to use.
@@ -46,6 +58,11 @@ void app_main(void)
   sequencer->steps[2]->note->val = 300;
 
   saw = new_Saw(sequencer->steps[0]->note->val); //make a new sawtooth oscillator
+
+  TaskHandle_t pollHandle = NULL;
+  static uint8_t ucParameterToPass;
+
+  //xTaskCreate(poll, "POLL", 1, &ucParameterToPass, tskIDLE_PRIORITY, &pollHandle);
   
   timer_init(TIMER_GROUP_0, TIMER_0, &config); // initialize the first timer of the first timer group with the configuration defined above
   timer_set_counter_value(TIMER_GROUP_0, TIMER_0, 0);
