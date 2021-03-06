@@ -32,9 +32,9 @@ void interrupt_for_sample(void* arg) { // function that gets called upon timer i
 }
 
 void poll(void *pvParameters) {
-  while(1) {
-    printf("TEST");
-  }
+  while (true) {
+    int x = 5; //perform arbitrary function to ensure that printf was doing the slowing, not the notion of a task itself
+  }  
 }
 
 timer_config_t config = { // define the timer configuation we want to use.
@@ -60,9 +60,8 @@ void app_main(void)
   saw = new_Saw(sequencer->steps[0]->note->val); //make a new sawtooth oscillator
 
   TaskHandle_t pollHandle = NULL;
-  static uint8_t ucParameterToPass;
 
-  //xTaskCreate(poll, "POLL", 1, &ucParameterToPass, tskIDLE_PRIORITY, &pollHandle);
+  xTaskCreate(poll, "POLL", 2048, NULL, 5, &pollHandle);
   
   timer_init(TIMER_GROUP_0, TIMER_0, &config); // initialize the first timer of the first timer group with the configuration defined above
   timer_set_counter_value(TIMER_GROUP_0, TIMER_0, 0);
